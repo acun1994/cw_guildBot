@@ -1,0 +1,7 @@
+# List of required packages (Dependencies)
+redis
+python-telegram-bot
+
+# If you need to specify a version
+requests==2.16.5
+

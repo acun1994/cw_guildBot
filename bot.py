@@ -145,7 +145,7 @@ def inlinequery(bot, update):
             results.append(
                 InlineQueryResultArticle(
                     id=uuid4(),
-                    title = key,
+                    title = "{} x{}".format(key, quantity),
                     input_message_content = InputTextMessageContent(
                         '/g_deposit {} {}'.format(itemCodes[key], quantity)
                     )

@@ -1,121 +1,186 @@
-# DEV : Remnants, no need to modify
-# -*- coding: utf-8 -*-
-# If you use redis, install this add-on https://elements.heroku.com/addons/heroku-redis
-#r = redis.from_url(os.environ.get("REDIS_URL"))
-
-# DEV : Comment Syntax
-# 		DEV - meant for Development-specific options or comments
-#		DEF - variable/handler/import definitions and declarations
-#		FUN - explains what functions do. Max 2 sentences
-#		VAR - explains use of variable. Include which module it belongs to
-#		LOG - meant for Logging/Debug-specific functions or comments
-# 		EFF - catalogue side-effects that change things outside of the function
-
-# DEV : Python Note
-# Multiline strings in IDE can be done by escaping newline /[ENTER]
-# Python can accept function parameters out of order. Just specify parameter name as defined in function declaration
-# Split long function calls into multiple lines, with each parameter in its own line and named correctly
-# Be careful of whitespace. Python is whitespace sensititve
-
 # DEF : Imports
-import os, telegram, re, logging
-from collections import namedtuple
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
+import os, logging
+from uuid import uuid4
+
+from telegram import InlineQueryResultArticle, ParseMode, InputTextMessageContent
+from telegram.ext import Updater, InlineQueryHandler, CommandHandler
+from telegram.utils.helpers import escape_markdown
 
 # DEV : Replace this with dev token if you are testing out code
-token = '553336581:AAFLrI6QY6B2wpcO0XimLyG43FjbuZhZkGQ'
+#token = '553336581:AAFLrI6QY6B2wpcO0XimLyG43FjbuZhZkGQ'
+token = os.environ["TELEGRAM_TOKEN"]
 
-# LOG : Logger declaration
+itemCodes = {
+    "Spring Bay Leaf": "52",
+    "Bottle of Peace": "p06",
+    "Bottle of Greed": "p09",
+    "Dragon Seed": "57",
+    "Bottle of Nature": "p12",
+    "Vial of Nature": "p10",
+    "Potion of Nature": "p11",
+    "Love Creeper": "42",
+    "Wolf Root": "43",
+    "Wooden arrows pack": "505",
+    "Sapphire": "15",
+    "Steel mold": "27",
+    "Wooden shaft": "14",
+    "Silver mold": "28",
+    "Solvent": "16",
+    "Rope": "31",
+    "Silver alloy": "25",
+    "Steel arrows pack": "511",
+    "Purified powder": "24",
+    "Hardener": "18",
+    "Magic stone": "13",
+    "Ruby": "17",
+    "Metal plate": "33",
+    "Silver ore": "10",
+    "Kloliarway": "64",
+    "Bottle of Rage": "p03",
+    "Ilaves": "46",
+    "Itacory": "62",
+    "Yellow Seed": "50",
+    "Assassin Vine": "63",
+    "Potion of Rage": "p02",
+    "Queen's Pepper": "58",
+    "Swamp Lavender": "44",
+    "Cave Garlic": "49",
+    "Sanguine Parsley": "54",
+    "White Blossom": "45",
+    "Ash Rosemary": "53",
+    "Mercy Sassafras": "40",
+    "Ultramarine dust": "60",
+    "Stinky Sumac": "39",
+    "Plasma of abyss": "59",
+    "Potion of Peace": "p05",
+    "Potion of Greed": "p08",
+    "Sun Tarragon": "55",
+    "Vial of Greed": "p07",
+    "Storm Hyssop": "48",
+    "Cliff Rue": "41",
+    "Bone": "04",
+    "Powder": "07",
+    "Coke": "23",
+    "String": "22",
+    "Charcoal": "06",
+    "Ephijora": "47",
+    "Leather": "20",
+    "Coal": "05",
+    "Tecceagrass": "51",
+    "Stick": "02",
+    "Thread": "01",
+    "Steel": "19",
+    "Bone powder": "21",
+    "Cloth": "09",
+    "Pelt": "03",
+    "Wrapping": "501",
+    "Torch": "tch",
+    "Vial of Peace": "p04",
+    "Vial of Rage": "p01",
+    "Ethereal bone": "61",
+    "Iron ore": "08",
+    "Maccunut": "56"
+}
+
+# Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
+
 logger = logging.getLogger(__name__)
 
 
-# FUN : Sends message
-def sendMsg(bot, msg, text, reply = False, keyboard = False):
-	reply_id = None
-	reply_markup_flag = None
-	if (reply is True): 
-		reply_id = msg.message_id
-	if (keyboard is True):
-		reply_markup_flag = markup
-	return bot.sendMessage(
-		chat_id = msg.chat_id,
-		reply_to_message_id = reply_id,
-		text = text,
-		parse_mode = telegram.ParseMode.MARKDOWN,
-		reply_markup = reply_markup_flag
-	)
-
-# FUN : Sends a reply message to msg
-def replyMsg(bot, msg, text):
-	sendMsg(bot, msg, text, reply = True)
-
-
-# FUN : Returns true if in a group chat	
-def inGroup(msg):
-	return msg.chat.get_members_count() > 2
-
-# FUN : Returns an identifiable name for chats
-#       Groups use title as name
-#       Private chats use their name	
-def getChatName(msg):
-	if inGroup(msg):
-		return msg.chat.title
-	else:
-		return msg.chat.username
-
-# LOG : Logs error
-def error(bot, update, error):
-    logger.warning('Update "%s" caused error "%s"', update, error)
-
-# DEF : Handlers
-
-# HND : Handles /start. Required for API compliance
-# FUN : Sends arbitrary startup message
-# EFF : Registers private chats into local storage
+# Define a few command handlers. These usually take the two arguments bot and
+# update. Error handlers also receive the raised TelegramError object in error.
 def start(bot, update):
-	sendMsg(bot, update.message, 'Hello World!')
-
-# HND : Handles /hello. Required for API compliance
-# FUN : Sends arbitrary greeting message
-def hello(bot, update):
-	replyMsg(bot, update.message, 'Hello {}'.format(update.message.from_user.first_name))
-	
-# HND : Handles /test.
-# FUN : Sends arbitrary ping message
-def test(bot, update):
-	logger.info('{} from {} triggered {}'.format(update.message.from_user.first_name, getChatName(update.message), 'test'))
-	replyMsg(bot, update.message, 'Test received {}'.format(update.message.from_user.first_name))
-
-# HND : Handles /f.
-# FUN : Sends Pay Respects meme
-# EFF : Deletes trigger message
-def payRespects(bot, update):
-	logger.info('{} from {} triggered {}'.format(update.message.from_user.first_name, getChatName(update.message), 'respect'))
-	sendMsg(bot, update.message, '{} has paid respects'.format(update.message.from_user.first_name))
-
-# HND : Handles /shrug
-# FUN : Sends ASCII shrug emoticon
-# EFF : Deletes trigger message
-def shrug(bot, update):
-	sendMsg(bot, update.message, '{}: ¯\\\_(ツ)\_/¯'.format(update.message.from_user.first_name))
+    """Send a message when the command /start is issued."""
+    update.message.reply_text('Hi!')
 
 
-	
-# HND : Registers handlers and updaters
+def help(bot, update):
+    """Send a message when the command /help is issued."""
+    update.message.reply_text('Help!')
+
+
+def inlinequery(bot, update):
+    """Handle the inline query."""
+    query = update.inline_query.query
+
+    results = []
+
+    if query == '' or len(query) < 3:
+        update.inline_query.answer(results)
+        return
+
+    splitquery = query.split()
+    
+    if len(splitquery) == 1:
+        queryString = query
+    else:
+        queryString = " ".join(splitquery[:-1])
+
+    quantity = 1
+
+    if not splitquery[-1].isdigit():
+        quantity = 1
+    else:
+        quantity = splitquery[-1]
+
+    logger.info("{} : {}".format(queryString, quantity))
+    
+    listValid = [key for key, value in itemCodes.items() if queryString in key.lower()]
+
+    if len(listValid) == 0:
+        results = [
+            InlineQueryResultArticle(
+                id=uuid4(),
+                title = "Not Found",
+                input_message_content = InputTextMessageContent(
+                    '{} not found'.format(queryString)
+                )
+            )
+        ]
+
+    else:
+        for key in listValid:  
+            results.append(
+                InlineQueryResultArticle(
+                    id=uuid4(),
+                    title = key,
+                    input_message_content = InputTextMessageContent(
+                        '/g_deposit {} {}'.format(itemCodes[key], quantity)
+                    )
+                )
+            )
+
+    update.inline_query.answer(results)
+
+
+def error(bot, update, context):
+    """Log Errors caused by Updates."""
+    logger.warning('Update "%s" caused error "%s"', update, context)
+
+# Create the Updater and pass it your bot's token.
+# Make sure to set use_context=True to use the new context based callbacks
+# Post version 12 this will no longer be necessary
 updater = Updater(token)
 
+# Get the dispatcher to register handlers
 dp = updater.dispatcher
 
-# HND : Command Handlers
-dp.add_handler(CommandHandler('start', start))
-dp.add_handler(CommandHandler('hello', hello))
-dp.add_handler(CommandHandler('test', test))
+# on different commands - answer in Telegram
+dp.add_handler(CommandHandler("start", start))
+dp.add_handler(CommandHandler("help", help))
 
-# HND : Error Handlers
+# on noncommand i.e message - echo the message on Telegram
+dp.add_handler(InlineQueryHandler(inlinequery))
+
+# log all errors
 dp.add_error_handler(error)
 
+# Start the Bot
 updater.start_polling()
+
+# Block until the user presses Ctrl-C or the process receives SIGINT,
+# SIGTERM or SIGABRT. This should be used most of the time, since
+# start_polling() is non-blocking and will stop the bot gracefully.
 updater.idle()

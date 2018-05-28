@@ -124,8 +124,6 @@ def inlinequery(bot, update):
         quantity = 1
     else:
         quantity = splitquery[-1]
-
-    logger.info("{} : {}".format(queryString, quantity))
     
     listValid = [key for key, value in itemCodes.items() if queryString in key.lower()]
 

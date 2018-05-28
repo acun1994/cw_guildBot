@@ -96,6 +96,7 @@ itemCodes = {
     #
     # == Miscellaneous ==
     #
+    "Pouch of Gold"     : "100",
     "Wrapping"          : "501",
     "Wooden arrows pack": "505",
     "Steel arrows pack" : "511",
@@ -197,20 +198,25 @@ def inlinequery(bot, update):
     splitquery = query.split()
     
     if len(splitquery) == 1:
-        queryString = query
-    else:
-        queryString = " ".join(splitquery[:-1])
-
-    quantity = 1
-
-    if not splitquery[-1].isdigit():
+        queryString = splitquery
         quantity = 1
     else:
-        quantity = splitquery[-1]
+        if not splitquery[-1].isdigit():
+            quantity = 1
+        else:
+            quantity = splitquery[-1]
+            queryString = splitquery[:-1]
     
-    listValid = [key for key, value in itemCodes.items() if queryString in key.lower()]
+    listValidFinal = [key for key, value in itemCodes.items() if queryString[0] in key.lower()]
+    if len(splitquery) > 1:
+        listValid2 = [key for key, value in itemCodes.items() if queryString[1] in key.lower()]
+        listValidFinal = list(set(listValidFinal).intersection(listValid2))
+        if len(splitquery) > 2:
+            listValid3 = [key for key, value in itemCodes.items() if queryString[2] in key.lower()]
+            listValidFinal = list(set(listValidFinal).intersection(listValid3))
+    
 
-    if len(listValid) == 0:
+    if len(listValidFinal) == 0:
         results = [
             InlineQueryResultArticle(
                 id=uuid4(),
@@ -222,7 +228,7 @@ def inlinequery(bot, update):
         ]
 
     else:
-        for key in listValid:  
+        for key in listValidFinal:  
             results.append(
                 InlineQueryResultArticle(
                     id=uuid4(),

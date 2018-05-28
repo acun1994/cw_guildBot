@@ -98,7 +98,7 @@ def start(bot, update):
 
 def help(bot, update):
     """Send a message when the command /help is issued."""
-    update.message.reply_text('Help!')
+    update.message.reply_text('Bot usage: @cw_guildBot {itemName} {quantity}. <br><br>Item Name does not have to be full, 3 characters is enough')
 
 
 def inlinequery(bot, update):

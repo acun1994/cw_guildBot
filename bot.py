@@ -195,23 +195,22 @@ def inlinequery(bot, update):
         update.inline_query.answer(results)
         return
 
-    splitquery = query.split()
-    
-    if len(splitquery) == 1:
-        queryString = splitquery
+    queryString = query.split()
+
+    if len(queryString) == 1:
         quantity = 1
     else:
-        if not splitquery[-1].isdigit():
+        if not queryString[-1].isdigit():
             quantity = 1
         else:
-            quantity = splitquery[-1]
-            queryString = splitquery[:-1]
+            quantity = queryString[-1]
+            queryString = queryString[:-1]
     
     listValidFinal = [key for key, value in itemCodes.items() if queryString[0] in key.lower()]
-    if len(splitquery) > 1:
+    if len(queryString) > 1:
         listValid2 = [key for key, value in itemCodes.items() if queryString[1] in key.lower()]
         listValidFinal = list(set(listValidFinal).intersection(listValid2))
-        if len(splitquery) > 2:
+        if len(queryString) > 2:
             listValid3 = [key for key, value in itemCodes.items() if queryString[2] in key.lower()]
             listValidFinal = list(set(listValidFinal).intersection(listValid3))
     
@@ -222,7 +221,7 @@ def inlinequery(bot, update):
                 id=uuid4(),
                 title = "Not Found",
                 input_message_content = InputTextMessageContent(
-                    '{} not found'.format(queryString)
+                    '{} not found'.format(" ".join(queryString))
                 )
             )
         ]

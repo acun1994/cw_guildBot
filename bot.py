@@ -93,6 +93,8 @@ itemCodes = {
     "Vial of Nature"    : "p10",
     "Potion of Nature"  : "p11",
     "Bottle of Nature"  : "p12",
+    "Vial of Oblivion"  : "pl1",
+    "Bottle of Oblivion": "pl3",
     #
     # == Miscellaneous ==
     #

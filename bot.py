@@ -78,6 +78,11 @@ itemCodes = {
     "Itacory"           : "62",
     "Assassin Vine"     : "63",
     "Kloliarway"        : "64",
+    "Astrulic"          : "65",
+    "Flammia Nut"       : "66",
+    "Plexisop"          : "67",
+    "Mammoth Dill"      : "68",
+    "Silver Dust"       : "69",
     #
     # == Potions ==
     #

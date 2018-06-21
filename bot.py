@@ -214,6 +214,7 @@ def help(bot, update):
 def inlinequery(bot, update):
     """Handle the inline query."""
     query = update.inline_query.query
+    actionText = "/g_deposit"
 
     results = []
 
@@ -223,6 +224,10 @@ def inlinequery(bot, update):
 
     queryString = query.split()
 
+    if queryString[-1].upper() == "W":
+        queryString = queryString[:-1]
+        actionText = "/g_withdraw"
+
     if len(queryString) == 1:
         quantity = 1
     else:
@@ -231,15 +236,12 @@ def inlinequery(bot, update):
         else:
             quantity = queryString[-1]
             queryString = queryString[:-1]
-    
+
     listValidFinal = [key for key, value in itemCodes.items() if queryString[0] in key.lower()]
-    if len(queryString) > 1:
-        listValid2 = [key for key, value in itemCodes.items() if queryString[1] in key.lower()]
-        listValidFinal = list(set(listValidFinal).intersection(listValid2))
-        if len(queryString) > 2:
-            listValid3 = [key for key, value in itemCodes.items() if queryString[2] in key.lower()]
-            listValidFinal = list(set(listValidFinal).intersection(listValid3))
     
+    if len(queryString > 1):
+        for ele in queryString[1:]:
+            listValidFinal = list(set(listValidFinal).intersection([key for key, value in itemCodes.items() if ele in key.lower()]))   
 
     if len(listValidFinal) == 0:
         results = [
@@ -259,7 +261,7 @@ def inlinequery(bot, update):
                     id=uuid4(),
                     title = "{} x{}".format(key, quantity),
                     input_message_content = InputTextMessageContent(
-                        '/g_deposit {} {}'.format(itemCodes[key], quantity)
+                        "{} {} {}".format(actionText, itemCodes[key], quantity)
                     )
                 )
             )

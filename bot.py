@@ -239,7 +239,7 @@ def inlinequery(bot, update):
 
     listValidFinal = [key for key, value in itemCodes.items() if queryString[0] in key.lower()]
     
-    if len(queryString > 1):
+    if len(queryString) > 1:
         for ele in queryString[1:]:
             listValidFinal = list(set(listValidFinal).intersection([key for key, value in itemCodes.items() if ele in key.lower()]))   
 

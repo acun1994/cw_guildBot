@@ -305,13 +305,13 @@ def process(bot, update):
         update.message.reply_text("DEPOSIT INTO GUILD \n{}".format(replyText), parse_mode="HTML")
     else:
         update.message.reply_text("Sorry, I don't understand your request")
-        bot.sendMessage(chat_id='-1001213337130', text = 'Unknown text received.')
+        bot.sendMessage(chat_id='-1001213337130', text = 'CW - Unknown text received.')
         bot.sendMessage(chat_id='-1001213337130', text = update.message.text)
 
 def error(bot, update, context):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, context)
-    bot.sendMessage(chat_id='-1001213337130', text = ('Update "%s" caused error "%s"', update, context))
+    bot.sendMessage(chat_id='-1001213337130', text = ('CW - Update "%s" caused error "%s"', update, context))
 
 
 # Create the Updater and pass it your bot's token.

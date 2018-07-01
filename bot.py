@@ -309,6 +309,8 @@ def process(bot, update):
 def error(bot, update, context):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, context)
+    bot.sendMessage(chat_id='-1001213337130', text = ('Update "%s" caused error "%s"', update, context))
+
 
 # Create the Updater and pass it your bot's token.
 # Make sure to set use_context=True to use the new context based callbacks

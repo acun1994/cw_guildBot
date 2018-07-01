@@ -3,11 +3,14 @@ import os, logging
 from uuid import uuid4
 
 from telegram import InlineQueryResultArticle, ParseMode, InputTextMessageContent
-from telegram.ext import Updater, InlineQueryHandler, CommandHandler
+from telegram.ext import Updater, InlineQueryHandler, CommandHandler, MessageHandler, Filters
 from telegram.utils.helpers import escape_markdown
 
-# DEV : Replace this with dev token if you are testing out code
-token = os.environ["TELEGRAM_TOKEN"]
+# DEV : Replace this if using heroku
+#token = os.environ["TELEGRAM_TOKEN"]
+f = open("token", "r")
+if f.mode == "r":
+    token = f.read()
 
 itemCodes = {
     #  
@@ -23,6 +26,8 @@ itemCodes = {
     "Iron ore"          : "08",
     "Cloth"             : "09",
     "Silver ore"        : "10",
+    "Bauxite"           : "11",
+    #NYI                : "12",
     "Magic stone"       : "13",
     "Wooden shaft"      : "14",
     "Sapphire"          : "15",
@@ -82,7 +87,7 @@ itemCodes = {
     "Flammia Nut"       : "66",
     "Plexisop"          : "67",
     "Mammoth Dill"      : "68",
-    "Silver Dust"       : "69",
+    "Silver dust"       : "69",
     #
     # == Potions ==
     #
@@ -98,15 +103,15 @@ itemCodes = {
     "Vial of Nature"    : "p10",
     "Potion of Nature"  : "p11",
     "Bottle of Nature"  : "p12",
-    "Vial of Mana"    : "p13",
-    "Potion of Mana"  : "p14",
-    "Bottle of Mana"  : "p15",
-    "Vial of Twilight"    : "p16",
-    "Potion of Twilight"  : "p17",
-    "Bottle of Twilight"  : "p18",
-    "Vial of Morph"    : "p19",
-    "Potion of Morph"  : "p20",
-    "Bottle of Morph"  : "p21",
+    "Vial of Mana"      : "p13",
+    "Potion of Mana"    : "p14",
+    "Bottle of Mana"    : "p15",
+    "Vial of Twilight"  : "p16",
+    "Potion of Twilight": "p17",
+    "Bottle of Twilight": "p18",
+    "Vial of Morph"     : "p19",
+    "Potion of Morph"   : "p20",
+    "Bottle of Morph"   : "p21",
     "Vial of Oblivion"  : "pl1",
     "Bottle of Oblivion": "pl3",
     #
@@ -151,45 +156,50 @@ itemCodes = {
     #
     # == Parts ==
     #
-    "Champion Blade"            : "k01",
-    "Trident Blade"             : "k02",
+    "Champion blade"            : "k01",
+    "Trident blade"             : "k02",
     "Hunter Shaft"              : "k03",
-    "War Hammer Head"           : "k04",
-    "Hunter Blade"              : "k05",
-    "Order Armor Piece"         : "k06",
-    "Order Helmet Fragment"     : "k07",
-    "Order Boots Part"          : "k08",
-    "Order Gauntlets Part"      : "k09",
-    "Order Shield Part"         : "k10",
-    "Hunter Armor Part"         : "k11",
-    "Hunter Helmet Fragment"    : "k12",
-    "Hunter Boots Part"         : "k13",
-    "Hunter Gloves Part"        : "k14",
-    "Clarity Robe Piece"        : "k15",
-    "Clarity Circlet Fragment"  : "k16",
-    "Clarity Shoes Part"        : "k17",
-    "Clarity Bracers Part"      : "k18",
+    "War Hammer head"           : "k04",
+    "Hunter blade"              : "k05",
+    "Order Armor piece"         : "k06",
+    "Order Helmet fragment"     : "k07",
+    "Order Boots part"          : "k08",
+    "Order Gauntlets part"      : "k09",
+    "Order Shield part"         : "k10",
+    "Hunter Armor part"         : "k11",
+    "Hunter Helmet fragment"    : "k12",
+    "Hunter Boots part"         : "k13",
+    "Hunter Gloves part"        : "k14",
+    "Clarity Robe piece"        : "k15",
+    "Clarity Circlet fragment"  : "k16",
+    "Clarity Shoes part"        : "k17",
+    "Clarity Bracers part"      : "k18",
     #
     # == Recipes ==
     #   
-    "Champion Sword Recipe"     : "r01",
-    "Trident Recipe"            : "r02",
-    "Hunter Bow Recipe"         : "r03",
-    "War Hammer Recipe"         : "r04",
-    "Hunter Dagger Recipe"      : "r05",
-    "Order Armor Recipe"        : "r06",
-    "Order Helmet Recipe"       : "r07",
-    "Order Boots Recipe"        : "r08",
-    "Order Gauntlets Recipe"    : "r09",
-    "Order Shield Recipe"       : "r10",
-    "Hunter Armor Recipe"       : "r11",
-    "Hunter Helmet Recipe"      : "r12",
-    "Hunter Boots Recipe"       : "r13",
-    "Hunter Gloves Recipe"      : "r14",
-    "Clarity Robe Recipe"       : "r15",
-    "Clarity Circlet Recipe"    : "r16",
-    "Clarity Shoes Recipe"      : "r17",
-    "Clarity Bracers Recipe"    : "r18"
+    "Champion Sword recipe"     : "r01",
+    "Trident recipe"            : "r02",
+    "Hunter Bow recipe"         : "r03",
+    "War Hammer recipe"         : "r04",
+    "Hunter Dagger recipe"      : "r05",
+    "Order Armor recipe"        : "r06",
+    "Order Helmet recipe"       : "r07",
+    "Order Boots recipe"        : "r08",
+    "Order Gauntlets recipe"    : "r09",
+    "Order Shield recipe"       : "r10",
+    "Hunter Armor recipe"       : "r11",
+    "Hunter Helmet recipe"      : "r12",
+    "Hunter Boots recipe"       : "r13",
+    "Hunter Gloves recipe"      : "r14",
+    "Clarity Robe recipe"       : "r15",
+    "Clarity Circlet recipe"    : "r16",
+    "Clarity Shoes recipe"      : "r17",
+    "Clarity Bracers recipe"    : "r18"
+
+    #
+    # == King Parts ==
+    #   
+
 }
 
 # Enable logging
@@ -268,6 +278,33 @@ def inlinequery(bot, update):
 
     update.inline_query.answer(results)
 
+def process(bot, update):
+    #https://t.me/share/url?url=/brew_60%20120 link format for auto forward
+    """Process given /stock"""
+    boolValid = False
+    textLines = update.message.text.splitlines()
+    if "📦" in textLines[0]:
+        textLines = textLines[1:]
+    
+    if "/aa" in textLines[0]:
+        textLines = [lines[7:] for lines in textLines]
+
+    if ")" in textLines[0]:
+        textLines = [lines[:-1] for lines in textLines]
+
+    if "(" in textLines[0]:
+        textLines = [a.split(" (") for a in textLines]
+        boolValid = True
+    elif " x " in textLines[0]:
+        textLines  = [a.split(" x ") for a in textLines]
+        boolValid = True
+
+    if boolValid:
+        replyText = "\n".join(["<a href='https://t.me/share/url?url=/g_deposit%20{}%20{}'>{}</a> x {}".format(itemCodes[a[0]], a[1],a[0], a[1]) for a in textLines])
+
+        update.message.reply_text("DEPOSIT INTO GUILD \n{}".format(replyText), parse_mode="HTML")
+    else:
+        update.message.reply_text("Sorry, I don't understand your request")
 
 def error(bot, update, context):
     """Log Errors caused by Updates."""
@@ -286,6 +323,9 @@ dp.add_handler(CommandHandler("start", start))
 dp.add_handler(CommandHandler("help", help))
 
 # on noncommand i.e message - echo the message on Telegram
+dp.add_handler(MessageHandler(Filters.text, process))
+
+# on Inline query
 dp.add_handler(InlineQueryHandler(inlinequery))
 
 # log all errors

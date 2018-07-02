@@ -208,29 +208,20 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 logger = logging.getLogger(__name__)
 
-old_factory = logging.getLogRecordFactory()
-
-def record_factory(bot, *args, **kwargs):
-    record = old_factory(*args, **kwargs)
-    bot.sendMessage(chat_id='-1001213337130', text = 'CW - <b>Error</b>\n{}'.format(record.message), parse_mode = "HTML")
-    return record
-
-logging.setLogRecordFactory(record_factory)
-
-
 # Define a few command handlers. These usually take the two arguments bot and
 # update. Error handlers also receive the raised TelegramError object in error.
+@catch_error
 def start(bot, update):
     """Send a message when the command /start is issued."""
     update.message.reply_text('Hi!')
 
-
+@catch_error
 def help(bot, update):
     """Send a message when the command /help is issued."""
     update.message.reply_text('INLINE Bot usage: \n@cw_guildBot {itemName} {quantity}. \n\nItem Name does not have to be full, 3 characters is enough')
     update.message.reply_text('STANDARD Bot usage: \nForward a list of items e.g. /stock, Alchemy, Brewery Table')
 
-
+@catch_error
 def inlinequery(bot, update):
     """Handle the inline query."""
     query = update.inline_query.query
@@ -288,6 +279,7 @@ def inlinequery(bot, update):
 
     update.inline_query.answer(results)
 
+@catch_error
 def process(bot, update):
     #https://t.me/share/url?url=/brew_60%20120 link format for auto forward
     """Process given /stock"""
@@ -328,6 +320,16 @@ def error(bot, update, context):
     logger.warning('Update "%s" caused error "%s"', update, context)
     bot.sendMessage(chat_id='-1001213337130', text = ('CW - <b>Error</b>\n Update "%s" caused error "%s"', update, context), parse_mode = "HTML")
 
+def catch_error(f):
+    def wrap(bot, update):
+        try:
+            return f(bot, update)
+        except Exception as e:
+            logger.error(str(e))
+            bot.send_message(chat_id='-1001213337130',
+                             text=" CW - ERROR \n {}".format(str(e)))
+
+    return wrap
 
 # Create the Updater and pass it your bot's token.
 # Make sure to set use_context=True to use the new context based callbacks

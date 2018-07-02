@@ -307,15 +307,16 @@ def process(bot, update):
     else:
         update.message.reply_text("Sorry, I don't understand your request. Please use /help for more information")
         bot.sendMessage(chat_id='-1001213337130',\
-            text = 'CW - Unknown text received. \
-                  \nSender : {} ({})\
-                  \nText:\
-                  \n{}'.format(update.message.from_user.first_name, update.message.from_user.username , update.message.text))
+            text = 'CW - Unknown text received.\
+                  \n Sender : \
+                  \n  {} ({})\
+                  \n Text:\
+                  \n  {}'.format(update.message.from_user.first_name, update.message.from_user.username , update.message.text))
 
 def error(bot, update, context):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, context)
-    bot.sendMessage(chat_id='-1001213337130', text = ('CW - Update "%s" caused error "%s"', update, context))
+    bot.sendMessage(chat_id='-1001213337130', text = ('CW - Error\n Update "%s" caused error "%s"', update, context))
 
 
 # Create the Updater and pass it your bot's token.

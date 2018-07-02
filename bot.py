@@ -218,7 +218,8 @@ def start(bot, update):
 
 def help(bot, update):
     """Send a message when the command /help is issued."""
-    update.message.reply_text('Bot usage: @cw_guildBot {itemName} {quantity}. \n\nItem Name does not have to be full, 3 characters is enough')
+    update.message.reply_text('INLINE Bot usage: \n@cw_guildBot {itemName} {quantity}. \n\nItem Name does not have to be full, 3 characters is enough')
+    update.message.reply_text('STANDARD Bot usage: \nForward a list of items e.g. /stock, Alchemy, Brewery Table')
 
 
 def inlinequery(bot, update):
@@ -304,9 +305,12 @@ def process(bot, update):
 
         update.message.reply_text("DEPOSIT INTO GUILD \n{}".format(replyText), parse_mode="HTML")
     else:
-        update.message.reply_text("Sorry, I don't understand your request")
-        bot.sendMessage(chat_id='-1001213337130', text = 'CW - Unknown text received.')
-        bot.sendMessage(chat_id='-1001213337130', text = update.message.text)
+        update.message.reply_text("Sorry, I don't understand your request. Please use /help for more information")
+        bot.sendMessage(chat_id='-1001213337130',\
+            text = 'CW - Unknown text received. \
+                  \nSender : {} ({})\
+                  \nText:\
+                  \n{}'.format(update.message.from_user.first_name, update.message.from_user.username , update.message.text))
 
 def error(bot, update, context):
     """Log Errors caused by Updates."""

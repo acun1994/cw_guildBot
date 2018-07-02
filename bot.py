@@ -208,6 +208,15 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 logger = logging.getLogger(__name__)
 
+old_factory = logging.getLogRecordFactory()
+
+def record_factory(bot, *args, **kwargs):
+    record = old_factory(*args, **kwargs)
+    bot.sendMessage(chat_id='-1001213337130', text = 'CW - <b>Error</b>\n{}'.format(record.message), parse_mode = "HTML")
+    return record
+
+logging.setLogRecordFactory(record_factory)
+
 
 # Define a few command handlers. These usually take the two arguments bot and
 # update. Error handlers also receive the raised TelegramError object in error.

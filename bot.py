@@ -6,6 +6,8 @@ from telegram import InlineQueryResultArticle, ParseMode, InputTextMessageConten
 from telegram.ext import Updater, InlineQueryHandler, CommandHandler, MessageHandler, Filters
 from telegram.utils.helpers import escape_markdown
 
+from functools import wraps
+
 # DEV : Replace this if using heroku
 #token = os.environ["TELEGRAM_TOKEN"]
 f = open("token", "r")
@@ -208,6 +210,20 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 logger = logging.getLogger(__name__)
 
+def catch_error(f):
+    @wraps(f)
+    def wrap(bot, update):
+        try:
+            return f(bot, update)
+        except Exception as e:
+            logger.error(str(e))
+            template = "CW - ERROR \nAn exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(e).__name__, e.args)
+            bot.send_message(chat_id='-1001213337130',
+                             text=message)
+            update.message.reply_text("Sorry, I have encountered an error. My master has been informed. Please use /help for more information")
+    return wrap
+
 # Define a few command handlers. These usually take the two arguments bot and
 # update. Error handlers also receive the raised TelegramError object in error.
 @catch_error
@@ -320,16 +336,7 @@ def error(bot, update, context):
     logger.warning('Update "%s" caused error "%s"', update, context)
     bot.sendMessage(chat_id='-1001213337130', text = ('CW - <b>Error</b>\n Update "%s" caused error "%s"', update, context), parse_mode = "HTML")
 
-def catch_error(f):
-    def wrap(bot, update):
-        try:
-            return f(bot, update)
-        except Exception as e:
-            logger.error(str(e))
-            bot.send_message(chat_id='-1001213337130',
-                             text=" CW - ERROR \n {}".format(str(e)))
 
-    return wrap
 
 # Create the Updater and pass it your bot's token.
 # Make sure to set use_context=True to use the new context based callbacks

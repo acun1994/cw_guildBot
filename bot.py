@@ -562,7 +562,7 @@ def status(bot, job):
     global proccessCount, errorCount
     print(bot.sendMessage(chat_id = '-1001213337130', text= "TEST").message_id)
     bot.edit_message_text(  chat_id = '-1001213337130', 
-                            message_id = 276, 
+                            message_id = 287, #276 for dev
                             text = "CW STATUS - `OK` : `{}`\nERRORS : **{}**\nPROCESSED : **{}**".format(
                                         datetime.now().time().strftime('%H:%M'), 
                                         errorCount,

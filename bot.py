@@ -8,10 +8,23 @@ from telegram.utils.helpers import escape_markdown
 
 from functools import wraps
 
+import re
+
+def remove_emoji(string):
+    emoji_pattern = re.compile("["
+                           u"\U0001F600-\U0001F64F"  # emoticons
+                           u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                           u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                           u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                           u"\U00002702-\U000027B0"
+                           u"\U000024C2-\U0001F251"
+                           "]+", flags=re.UNICODE)
+    return emoji_pattern.sub(r'', string)
+
 # DEV : Replace this if using heroku
 #token = os.environ["TELEGRAM_TOKEN"]
-f = open("token", "r")
-#f = open("devtoken", "r")
+#f = open("token", "r")
+f = open("devtoken", "r")
 if f.mode == "r":
     token = f.read()
 
@@ -161,8 +174,8 @@ itemCodes = {
     #
     "Champion blade"            : "k01",
     "Trident blade"             : "k02",
-    "Hunter Shaft"              : "k03",
-    "War Hammer head"           : "k04",
+    "Hunter shaft"              : "k03",
+    "War hammer head"           : "k04",
     "Hunter blade"              : "k05",
     "Order Armor piece"         : "k06",
     "Order Helmet fragment"     : "k07",
@@ -301,16 +314,23 @@ def inlinequery(bot, update):
 def process(bot, update):
     #https://t.me/share/url?url=/brew_60%20120 link format for auto forward
     """Process given /stock"""
+    if not update.message:
+        return
     boolValid = False
     textLines = update.message.text.splitlines()
     if "📦" in textLines[0]:
         textLines = textLines[1:]
     
     if "/aa" in textLines[0]:
-        textLines = [lines[7:] for lines in textLines]
+        textLines = [line[7:] for line in textLines]
+
+    if "/a_" in textLines[0]:
+        textLines = [line[7:] if line[6] == ' ' else line[6:] for line in textLines]
+
+    textLines = [remove_emoji(line)[:-10] if "view" in line else line for line in textLines]
 
     if ")" in textLines[0]:
-        textLines = [lines[:-1] for lines in textLines]
+        textLines = [line[:-1] for line in textLines]
 
     if "(" in textLines[0]:
         textLines = [a.split(" (") for a in textLines]
@@ -319,6 +339,7 @@ def process(bot, update):
         textLines  = [a.split(" x ") for a in textLines]
         boolValid = True
 
+    
     if boolValid:
         replyText = "\n".join(["<a href='https://t.me/share/url?url=/g_deposit%20{}%20{}'>{}</a> x {}".format(itemCodes[a[0]], a[1],a[0], a[1]) for a in textLines])
 
@@ -333,6 +354,7 @@ def process(bot, update):
                   \n<pre>{}</pre>'.format(update.message.from_user.first_name, update.message.from_user.username , update.message.text),
                   parse_mode = "HTML")
 
+@catch_error
 def error(bot, update, context):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, context)

@@ -10,8 +10,8 @@ from functools import wraps
 
 # DEV : Replace this if using heroku
 #token = os.environ["TELEGRAM_TOKEN"]
-#f = open("token", "r")
-f = open("devtoken", "r")
+f = open("token", "r")
+#f = open("devtoken", "r")
 if f.mode == "r":
     token = f.read()
 

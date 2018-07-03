@@ -10,7 +10,8 @@ from functools import wraps
 
 # DEV : Replace this if using heroku
 #token = os.environ["TELEGRAM_TOKEN"]
-f = open("token", "r")
+#f = open("token", "r")
+f = open("devtoken", "r")
 if f.mode == "r":
     token = f.read()
 
@@ -221,7 +222,8 @@ def catch_error(f):
             message = template.format(type(e).__name__, e.args)
             bot.send_message(chat_id='-1001213337130',
                              text=message)
-            update.message.reply_text("Sorry, I have encountered an error. My master has been informed. Please use /help for more information")
+            if update.message:
+                update.message.reply_text("Sorry, I have encountered an error. My master has been informed. Please use /help for more information")
     return wrap
 
 # Define a few command handlers. These usually take the two arguments bot and

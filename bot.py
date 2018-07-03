@@ -7,7 +7,7 @@ from telegram.ext import Updater, InlineQueryHandler, CommandHandler, MessageHan
 from telegram.utils.helpers import escape_markdown
 
 from functools import wraps
-
+from datetime import datetime
 import re
 
 def remove_emoji(string):
@@ -339,6 +339,12 @@ itemCodes = {
     "Blessed Cloak recipe":"r61",
     "📕Scroll of Rage":"s01",
     "📕Scroll of Peace":"s02",
+    "📗Scroll of Rage":"s03",
+    "📗Scroll of Peace":"s04",
+    "📕Rare Scroll of Rage":"s11",
+    "📕Rare Scroll of Peace":"s12",
+    "📗Rare Scroll of Rage":"s13",
+    "📗Rare Scroll of Peace":"s14",
     "Wooden sword":"w01",
     "Short sword":"w02",
     "Long sword":"w03",
@@ -393,6 +399,9 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 logger = logging.getLogger(__name__)
 
+errorCount = 0
+proccessCount = 0
+
 def catch_error(f):
     @wraps(f)
     def wrap(bot, update, context = ""):
@@ -400,6 +409,8 @@ def catch_error(f):
             return f(bot, update)
         except Exception as e:
             logger.error(str(e))
+            global errorCount 
+            errorCount = errorCount + 1
 
             username = "Bot"   
             if update and update.message  :
@@ -503,6 +514,9 @@ def process(bot, update):
 
     elif "/use" in textLines[0]:
         textLines = [line[:-10] if line[:-1] == ' ' or line[:-1] == ' ' else line[:-9] for line in textLines]
+    
+    elif "/lot" in textLines[1]:
+        textLines = [line[9:] for line in textLines[1:-5]]
 
     textLines = [remove_emoji(line)[:-10] if "view" in line else line for line in textLines]
     textLines = [remove_emoji(line)[:-10] if "bind" in line else line for line in textLines]
@@ -519,12 +533,15 @@ def process(bot, update):
         textLines  = [a.split(" x ") for a in textLines]
         boolValid = True
 
-    
     if boolValid:
+        global proccessCount
+        proccessCount = proccessCount+1
         replyText = "\n".join(["<a href='https://t.me/share/url?url=/g_deposit%20{}%20{}'>{}</a> x {}".format(itemCodes[a[0]], a[1],a[0], a[1]) for a in textLines])
 
         update.message.reply_text("DEPOSIT INTO GUILD \n{}".format(replyText), parse_mode="HTML")
     else:
+        global errorCount
+        errorCount = errorCount+1
         update.message.reply_text("Sorry, I don't understand your request. Please use /help for more information")
         bot.sendMessage(chat_id='-1001213337130',\
             text = 'CW - Unknown text received.\
@@ -537,15 +554,29 @@ def process(bot, update):
 @catch_error
 def error(bot, update, context = ""):
     """Log Errors caused by Updates."""
+    if update is None: return
     logger.warning('Update "%s" caused error "%s"', update, context)
-    bot.sendMessage(chat_id='-1001213337130', text = ('CW - <b>Error</b>\n Update "%s" caused error "%s"', update, context), parse_mode = "HTML")
+    bot.sendMessage(chat_id='-1001213337130', text = 'CW - <b>Error</b>\n Update "{}" caused error "{}"'.format(update, context), parse_mode = "HTML")
 
+def status(bot, job):
+    global proccessCount, errorCount
+    
+    bot.edit_message_text(  chat_id = '-1001213337130', 
+                            message_id = 276, 
+                            text = "CW STATUS - `OK` : `{}`\nERRORS : **{}**\nPROCESSED : **{}**".format(
+                                        datetime.now().time().strftime('%H:%M'), 
+                                        errorCount,
+                                        proccessCount),
+                        parse_mode = ParseMode.MARKDOWN)
 
+    errorCount = 0
+    proccessCount = 0
 
 # Create the Updater and pass it your bot's token.
-# Make sure to set use_context=True to use the new context based callbacks
+# Make sure to set use_context=True to use the new context baspls ed callbacks
 # Post version 12 this will no longer be necessary
 updater = Updater(token)
+jobQ = updater.job_queue
 
 # Get the dispatcher to register handlers
 dp = updater.dispatcher
@@ -553,6 +584,9 @@ dp = updater.dispatcher
 # on different commands - answer in Telegram
 dp.add_handler(CommandHandler("start", start))
 dp.add_handler(CommandHandler("help", help))
+
+# Schedule
+jobQ.run_repeating(status, interval=300, first = 0)
 
 # on noncommand i.e message - echo the message on Telegram
 dp.add_handler(MessageHandler(Filters.text, process))

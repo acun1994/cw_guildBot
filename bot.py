@@ -132,7 +132,7 @@ itemCodes = {
     #
     # == Miscellaneous ==
     #
-    "Pouch of Gold"     : "100",
+    "Pouch of gold"     : "100",
     "Wrapping"          : "501",
     "Wooden arrows pack": "505",
     "Steel arrows pack" : "511",
@@ -248,7 +248,7 @@ def start(bot, update):
 @catch_error
 def help(bot, update):
     """Send a message when the command /help is issued."""
-    update.message.reply_text('INLINE Bot usage: \n@cw_guildBot {itemName} {quantity}. \n\nItem Name does not have to be full, 3 characters is enough')
+    update.message.reply_text('INLINE Bot usage: \n@cw_guildBot {itemName} {quantity} {"w" (optional, to withdraw)}. \n\nItem Name does not have to be full, 3 characters is enough')
     update.message.reply_text('STANDARD Bot usage: \nForward a list of items e.g. /stock, Alchemy, Brewery Table')
 
 @catch_error

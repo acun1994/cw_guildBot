@@ -400,13 +400,14 @@ def catch_error(f):
             return f(bot, update)
         except Exception as e:
             logger.error(str(e))
-                       
-            if update.message:
+
+            username = "Bot"   
+            if update and update.message  :
                 update.message.reply_text("Sorry, I have encountered an error. My master has been informed. Please use /help for more information")
                 username = update.message.from_user.first_name
 
-            template = "CW - ERROR \nAn exception of type {0} occurred. Arguments:\n{1!r}"
-            message = template.format(type(e).__name__, e.args)
+            template = "CW - ERROR \nUser {2} triggered\nAn exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(e).__name__, e.args, username)
             bot.send_message(chat_id='-1001213337130',
                              text=message)
     return wrap
@@ -501,14 +502,15 @@ def process(bot, update):
         textLines = [line[7:] if line[6] == ' ' else line[6:] for line in textLines]
 
     elif "/use" in textLines[0]:
-        textLines = [line[:-9] for line in textLines]
+        textLines = [line[:-10] if line[:-1] == ' ' or line[:-1] == ' ' else line[:-9] for line in textLines]
 
     textLines = [remove_emoji(line)[:-10] if "view" in line else line for line in textLines]
     textLines = [remove_emoji(line)[:-10] if "bind" in line else line for line in textLines]
     textLines = [line[:-1] if line[:-1] == ' ' else line for line in textLines]
+    textLines = [line for line in textLines if "+" not in line]
 
     if ")" in textLines[0]:
-        textLines = [line[:-1] for line in textLines]
+        textLines = [line.split(")")[0] for line in textLines]
 
     if "(" in textLines[0]:
         textLines = [a.split(" (") for a in textLines]
@@ -533,7 +535,7 @@ def process(bot, update):
                   parse_mode = "HTML")
 
 @catch_error
-def error(bot, update, context):
+def error(bot, update, context = ""):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, context)
     bot.sendMessage(chat_id='-1001213337130', text = ('CW - <b>Error</b>\n Update "%s" caused error "%s"', update, context), parse_mode = "HTML")

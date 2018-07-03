@@ -560,7 +560,7 @@ def error(bot, update, context = ""):
 
 def status(bot, job):
     global proccessCount, errorCount
-    
+    print(bot.sendMessage(chat_id = '-1001213337130', text= "TEST").message_id)
     bot.edit_message_text(  chat_id = '-1001213337130', 
                             message_id = 276, 
                             text = "CW STATUS - `OK` : `{}`\nERRORS : **{}**\nPROCESSED : **{}**".format(

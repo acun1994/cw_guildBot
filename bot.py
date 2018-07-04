@@ -597,7 +597,7 @@ dp.add_handler(CommandHandler("start", start))
 dp.add_handler(CommandHandler("help", help))
 
 # Schedule
-jobQ.run_repeating(status, interval=300, first = 0)
+jobQ.run_repeating(status, interval=900, first = 0)
 
 # on noncommand i.e message - echo the message on Telegram
 dp.add_handler(MessageHandler(Filters.text, process))

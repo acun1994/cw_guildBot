@@ -127,8 +127,8 @@ itemCodes = {
     "Vial of Morph"     : "p19",
     "Potion of Morph"   : "p20",
     "Bottle of Morph"   : "p21",
-    "Vial of Oblivion"  : "pl1",
-    "Bottle of Oblivion": "pl3",
+    "Vial of Оblivion"  : "pl1",
+    "Bottle of Оblivion": "pl3",
     #
     # == Miscellaneous ==
     #
@@ -425,7 +425,7 @@ def catch_error(f):
             template = "CW - ERROR \nUser: {2} ({3})\nAn exception of type {0} occurred.Arguments:\n{1!r}.Text :\n{4}"
             message = template.format(type(e).__name__, e.args, firstname, username, text)
             bot.send_message(chat_id='-1001213337130',
-                             text=message)
+                             text=message, parse_mode = ParseMode.HTML)
     return wrap
 
 # Define a few command handlers. These usually take the two arguments bot and
@@ -443,7 +443,7 @@ Use \help for more info', parse_mode=ParseMode.MARKDOWN)
 def help(bot, update):
     """Send a message when the command /help is issued."""
     update.message.reply_text('INLINE Bot usage: \n@cw_guildBot {itemName} {quantity} {"w" (optional, to withdraw)}. \n\nItem Name does not have to be full, 3 characters is enough')
-    update.message.reply_text('STANDARD Bot usage: \nForward a list of items \nCurrently supports `/stock`, `Alchemy`, `/more`\nBeta support for `Equipment`, `Misc`', parse_mode=ParseMode.MARKDOWN)
+    update.message.reply_text('STANDARD Bot usage: \nForward a list of items. Should support all inventories')
     update.message.reply_text('Poke @acun1994 if you find something that isn\'t handled yet')
 
 @catch_error
@@ -511,57 +511,115 @@ def process(bot, update):
     if not update.message:
         return
     boolValid = False
+    boolRecipe = False
+    boolGuild = False
     textLines = update.message.text.splitlines()
 
-    if len(textLines) > 1:
-        if "📦" in textLines[0]:
-            textLines = textLines[1:]
-        
-        if "/aa" in textLines[0]:
-            textLines = [line[7:] for line in textLines]
+    #Individual recipe. Waiting for action
+    if "📃" in textLines[0]:
+        update.message.reply_text("Please reply to the recipe text with 'deposit' or 'withdraw' ")
+        return
 
-        elif "/a_" in textLines[0]:
-            textLines = [line[7:] if line[6] == ' ' else line[6:] for line in textLines]
+    #Storage
+    if "📦" in textLines[0]:
+        textLines = textLines[1:]
 
-        elif "/use" in textLines[0]:
-            textLines = [line[:-10] if line[:-1] == ' ' or line[:-1] == ' ' else line[:-9] for line in textLines]
-        
-        elif "/lot" in textLines[1]:
-            textLines = [line[9:] for line in textLines[1:-5]]
-
-        textLines = [remove_emoji(line)[:-10] if "view" in line else line for line in textLines]
-        textLines = [remove_emoji(line)[:-10] if "bind" in line else line for line in textLines]
-        textLines = [line[:-1] if line[:-1] == ' ' else line for line in textLines]
-        textLines = [line for line in textLines if "+" not in line]
-
-        if ")" in textLines[0]:
-            textLines = [line.split(")")[0] for line in textLines]
-
-        if "(" in textLines[0]:
-            textLines = [a.split(" (") for a in textLines]
-            boolValid = True
-        elif " x " in textLines[0]:
-            textLines  = [a.split(" x ") for a in textLines]
-            boolValid = True
-
-        if boolValid:
-            global proccessCount
-            proccessCount = proccessCount+1
-            replyText = "\n".join(["<a href='https://t.me/share/url?url=/g_deposit%20{}%20{}'>{}</a> x {}".format(itemCodes[a[0]], a[1],a[0], a[1]) for a in textLines])
-
-            update.message.reply_text("DEPOSIT INTO GUILD \n{}".format(replyText), parse_mode="HTML")
-            return
+    #Guild Warehouse
+    if "Guild" in textLines[0]:
+        boolGuild = True
+        textLines = [line.split(" ",1)[1] for line in textLines[1:]]
     
-    global errorCount
-    errorCount = errorCount+1
-    update.message.reply_text("Sorry, I don't understand your request. Please use /help for more information")
-    bot.sendMessage(chat_id='-1001213337130',\
-        text = 'CW - Unknown text received.\
-                \n<b>Sender</b> : \
-                \n<pre>{} ({})</pre>\
-                \n<b>Text</b>:\
-                \n<pre>{}</pre>'.format(update.message.from_user.first_name, update.message.from_user.username , update.message.text),
-                parse_mode = "HTML")
+    #Brewery
+    elif "/aa" in textLines[0]:
+        textLines = [line[7:] for line in textLines]
+
+    #Workbench
+    elif "/a_" in textLines[0]:
+        textLines = [line[7:] if line[6] == ' ' else line[6:] for line in textLines]
+
+    #Misc
+    elif "/use" in textLines[0]:
+        textLines = [line[:-10] if line[:-1] == ' ' or line[:-1] == ' ' else line[:-9] for line in textLines]
+    
+    #Auction
+    elif len(textLines) > 1 and "/lot" in textLines[1]:
+        textLines = [line[9:] for line in textLines[1:-5]]
+
+    #Crafting
+    textLines = [remove_emoji(line)[:-10] if "view" in line else line for line in textLines]
+
+    #Equipment
+    textLines = [remove_emoji(line)[:-10] if "bind" in line else line for line in textLines]
+
+    #Individual recipe
+    if update.message.reply_to_message:
+        if "dep" in textLines[0].lower():
+            recipeAction = "Deposit"
+        elif "draw" in textLines[0].lower():
+            recipeAction = "Withdraw"
+        
+        if recipeAction:
+            recipeText = update.message.reply_to_message.text.splitlines()
+            if "(recipe)" in recipeText[0]:
+                boolRecipe = True
+                recipeTitle = "Ingredient List for \n<b>{}</b>".format(remove_emoji(recipeText[0])[:-10])
+                if "Type" in recipeText[1]:
+                    recipeText = recipeText[3:]
+                else:
+                    recipeText = recipeText[2:]
+
+                textLines = recipeText
+
+    #Remove trailing whitespace for Misc
+    textLines = [line[:-1] if line[:-1] == ' ' else line for line in textLines]
+
+    #Filter out uniques
+    textLines = [line for line in textLines if "+" not in line]
+
+    if "(" in textLines[0]:
+        textLines = [line.split(")")[0] for line in textLines]
+        textLines = [line.split(" (") for line in textLines]
+        boolValid = True
+    elif " x " in textLines[0]:
+        textLines  = [line.split(" x ") for line in textLines]
+        boolValid = True
+
+    global proccessCount
+    if boolRecipe:
+        proccessCount = proccessCount+1
+
+        if recipeAction == "Deposit":
+            replyText = "\n".join(["<a href='https://t.me/share/url?url=/g_deposit%20{}%20{}'>{}</a> x {}".format(itemCodes[a[0]], a[1],a[0], a[1]) for a in textLines])
+        elif recipeAction == "Withdraw":
+            replyText = "\n".join(["<a href='https://t.me/share/url?url=/g_withdraw%20{}%20{}'>{}</a> x {}".format(itemCodes[a[0]], a[1],a[0], a[1]) for a in textLines])
+
+        update.message.reply_text("{} {}\n{}".format(recipeAction, recipeTitle, replyText), parse_mode="HTML")
+        return
+    elif boolGuild:
+        proccessCount = proccessCount+1
+
+        replyText = "\n".join(["<a href='https://t.me/share/url?url=/g_withdraw%20{}%20{}'>{}</a> x {}".format(itemCodes[a[0]], a[1],a[0], a[1]) for a in textLines])
+
+        update.message.reply_text("WITHDRAW FROM GUILD\n{}".format(replyText), parse_mode="HTML")
+        return
+    elif boolValid:
+        proccessCount = proccessCount+1
+
+        replyText = "\n".join(["<a href='https://t.me/share/url?url=/g_deposit%20{}%20{}'>{}</a> x {}".format(itemCodes[a[0]], a[1],a[0], a[1]) for a in textLines])
+
+        update.message.reply_text("DEPOSIT INTO GUILD\n{}".format(replyText), parse_mode="HTML")
+        return
+    else:
+        global errorCount
+        errorCount = errorCount+1
+        update.message.reply_text("Sorry, I don't understand your request. Please use /help for more information")
+        bot.sendMessage(chat_id='-1001213337130',\
+            text = 'CW - Unknown text received.\
+                    \n<b>Sender</b> : \
+                    \n<pre>{} ({})</pre>\
+                    \n<b>Text</b>:\
+                    \n<pre>{}</pre>'.format(update.message.from_user.first_name, update.message.from_user.username , update.message.text),
+                    parse_mode = "HTML")
 
 @catch_error
 def error(bot, update, context = ""):

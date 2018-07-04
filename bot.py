@@ -438,7 +438,7 @@ def start(bot, update):
 Developer : @acun1994\n\
 Description : \n\
 Bot that assists in guild inventory management (Deposit, Withdraw)\n\
-Use \help for more info', parse_mode=ParseMode.MARKDOWN)
+Use /help for more info', parse_mode=ParseMode.MARKDOWN)
 
 @catch_error
 def help(bot, update):

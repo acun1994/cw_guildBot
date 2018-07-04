@@ -412,13 +412,18 @@ def catch_error(f):
             global errorCount 
             errorCount = errorCount + 1
 
-            username = "Bot"   
+            firstname = "Bot"   
+            username = "-"
+            text = "None"
             if update and update.message  :
                 update.message.reply_text("Sorry, I have encountered an error. My master has been informed. Please use /help for more information")
-                username = update.message.from_user.first_name
+                firstname = update.message.from_user.first_name
+                text = update.message.text
+                if update.message.from_user.username:
+                    username = update.message.from_user.username
 
-            template = "CW - ERROR \nUser {2} triggered\nAn exception of type {0} occurred. Arguments:\n{1!r}"
-            message = template.format(type(e).__name__, e.args, username)
+            template = "CW - ERROR \nUser: {2} ({3})\nAn exception of type {0} occurred.Arguments:\n{1!r}.Text :\n{4}"
+            message = template.format(type(e).__name__, e.args, firstname, username, text)
             bot.send_message(chat_id='-1001213337130',
                              text=message)
     return wrap
@@ -428,13 +433,17 @@ def catch_error(f):
 @catch_error
 def start(bot, update):
     """Send a message when the command /start is issued."""
-    update.message.reply_text('Hi!')
+    update.message.reply_text('Bot Name : `CW (EU) Guild Assistant`\n\
+Developer : @acun1994\n\
+Description : \n\
+Bot that assists in guild inventory management (Deposit, Withdraw)\n\
+Use \help for more info', parse_mode=ParseMode.MARKDOWN)
 
 @catch_error
 def help(bot, update):
     """Send a message when the command /help is issued."""
     update.message.reply_text('INLINE Bot usage: \n@cw_guildBot {itemName} {quantity} {"w" (optional, to withdraw)}. \n\nItem Name does not have to be full, 3 characters is enough')
-    update.message.reply_text('STANDARD Bot usage: \nForward a list of items \nCurrently supports `/stock`, `Alchemy`, `/more`\nBeta support for `Equipment`, `Misc`')
+    update.message.reply_text('STANDARD Bot usage: \nForward a list of items \nCurrently supports `/stock`, `Alchemy`, `/more`\nBeta support for `Equipment`, `Misc`', parse_mode=ParseMode.MARKDOWN)
     update.message.reply_text('Poke @acun1994 if you find something that isn\'t handled yet')
 
 @catch_error
@@ -503,53 +512,56 @@ def process(bot, update):
         return
     boolValid = False
     textLines = update.message.text.splitlines()
-    if "📦" in textLines[0]:
-        textLines = textLines[1:]
+
+    if len(textLines) > 1:
+        if "📦" in textLines[0]:
+            textLines = textLines[1:]
+        
+        if "/aa" in textLines[0]:
+            textLines = [line[7:] for line in textLines]
+
+        elif "/a_" in textLines[0]:
+            textLines = [line[7:] if line[6] == ' ' else line[6:] for line in textLines]
+
+        elif "/use" in textLines[0]:
+            textLines = [line[:-10] if line[:-1] == ' ' or line[:-1] == ' ' else line[:-9] for line in textLines]
+        
+        elif "/lot" in textLines[1]:
+            textLines = [line[9:] for line in textLines[1:-5]]
+
+        textLines = [remove_emoji(line)[:-10] if "view" in line else line for line in textLines]
+        textLines = [remove_emoji(line)[:-10] if "bind" in line else line for line in textLines]
+        textLines = [line[:-1] if line[:-1] == ' ' else line for line in textLines]
+        textLines = [line for line in textLines if "+" not in line]
+
+        if ")" in textLines[0]:
+            textLines = [line.split(")")[0] for line in textLines]
+
+        if "(" in textLines[0]:
+            textLines = [a.split(" (") for a in textLines]
+            boolValid = True
+        elif " x " in textLines[0]:
+            textLines  = [a.split(" x ") for a in textLines]
+            boolValid = True
+
+        if boolValid:
+            global proccessCount
+            proccessCount = proccessCount+1
+            replyText = "\n".join(["<a href='https://t.me/share/url?url=/g_deposit%20{}%20{}'>{}</a> x {}".format(itemCodes[a[0]], a[1],a[0], a[1]) for a in textLines])
+
+            update.message.reply_text("DEPOSIT INTO GUILD \n{}".format(replyText), parse_mode="HTML")
+            return
     
-    if "/aa" in textLines[0]:
-        textLines = [line[7:] for line in textLines]
-
-    elif "/a_" in textLines[0]:
-        textLines = [line[7:] if line[6] == ' ' else line[6:] for line in textLines]
-
-    elif "/use" in textLines[0]:
-        textLines = [line[:-10] if line[:-1] == ' ' or line[:-1] == ' ' else line[:-9] for line in textLines]
-    
-    elif "/lot" in textLines[1]:
-        textLines = [line[9:] for line in textLines[1:-5]]
-
-    textLines = [remove_emoji(line)[:-10] if "view" in line else line for line in textLines]
-    textLines = [remove_emoji(line)[:-10] if "bind" in line else line for line in textLines]
-    textLines = [line[:-1] if line[:-1] == ' ' else line for line in textLines]
-    textLines = [line for line in textLines if "+" not in line]
-
-    if ")" in textLines[0]:
-        textLines = [line.split(")")[0] for line in textLines]
-
-    if "(" in textLines[0]:
-        textLines = [a.split(" (") for a in textLines]
-        boolValid = True
-    elif " x " in textLines[0]:
-        textLines  = [a.split(" x ") for a in textLines]
-        boolValid = True
-
-    if boolValid:
-        global proccessCount
-        proccessCount = proccessCount+1
-        replyText = "\n".join(["<a href='https://t.me/share/url?url=/g_deposit%20{}%20{}'>{}</a> x {}".format(itemCodes[a[0]], a[1],a[0], a[1]) for a in textLines])
-
-        update.message.reply_text("DEPOSIT INTO GUILD \n{}".format(replyText), parse_mode="HTML")
-    else:
-        global errorCount
-        errorCount = errorCount+1
-        update.message.reply_text("Sorry, I don't understand your request. Please use /help for more information")
-        bot.sendMessage(chat_id='-1001213337130',\
-            text = 'CW - Unknown text received.\
-                  \n<b>Sender</b> : \
-                  \n<pre>{} ({})</pre>\
-                  \n<b>Text</b>:\
-                  \n<pre>{}</pre>'.format(update.message.from_user.first_name, update.message.from_user.username , update.message.text),
-                  parse_mode = "HTML")
+    global errorCount
+    errorCount = errorCount+1
+    update.message.reply_text("Sorry, I don't understand your request. Please use /help for more information")
+    bot.sendMessage(chat_id='-1001213337130',\
+        text = 'CW - Unknown text received.\
+                \n<b>Sender</b> : \
+                \n<pre>{} ({})</pre>\
+                \n<b>Text</b>:\
+                \n<pre>{}</pre>'.format(update.message.from_user.first_name, update.message.from_user.username , update.message.text),
+                parse_mode = "HTML")
 
 @catch_error
 def error(bot, update, context = ""):

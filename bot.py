@@ -390,7 +390,8 @@ itemCodes = {
     "Skull Crusher":"w43",
     "Dragon Mace":"w44",
     "Ghost Dagger":"w45",
-    "Lion Dagger":"w46"
+    "Lion Dagger":"w46",
+    "Loyalty Trophy":"tlt"
 }
 
 # Enable logging

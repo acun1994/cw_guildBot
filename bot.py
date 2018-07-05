@@ -393,7 +393,20 @@ itemCodes = {
     "dragon mace":"w44",
     "ghost dagger":"w45",
     "lion dagger":"w46",
-    "loyalty trophy":"tlt"
+    "loyalty trophy":"tlt",
+    "🎂cake":"e6",
+    "🎂special cake":"e7",
+    "🎂rare cake":"e8",
+    "🍫chocolate":"e9",
+    "💝valentine's card":"vc",
+    "🎁assistant's box":"bx1",
+    "elder's recommendation":"er",
+    "🦌deerhorn earloom":"tde",
+    "🐉dragonscale earloom":"tdr",
+    "🐺wolfpack earloom":"two",
+    "🥔potato earloom":"tpo",
+    "🦈sharkteeth earloom":"tsh",
+    "🦅highnest earloom":"thi"
 }
 
 # Enable logging
@@ -548,7 +561,7 @@ def process(bot, update):
 
     #Misc
     elif "/use" in textLines[0]:
-        textLines = [line[:-10] if line[:-1] == ' ' or line[:-1] == ' ' else line[:-9] for line in textLines]
+        textLines = [line[:-10] if line[:-1] == ' ' else line if "Wrap" in line or "Card" in line else line[:-9] for line in textLines]
     
     #Auction
     elif len(textLines) > 1 and "/lot" in textLines[1]:
@@ -585,8 +598,9 @@ def process(bot, update):
     textLines = [line[:-1] if line[:-1] == ' ' else line for line in textLines]
 
     #Filter out uniques
-    textLines = [line for line in textLines if "+" not in line]
+    textLines = [line for line in textLines if "+" not in line and "Sign" not in line]
 
+    print(textLines)
     if "(" in textLines[0]:
         textLines = [line.split(")")[0] for line in textLines]
         textLines = [line.split(" (") for line in textLines]

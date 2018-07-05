@@ -451,6 +451,7 @@ def start(bot, update):
     """Send a message when the command /start is issued."""
     update.message.reply_text('Bot Name : `CW (EU) Guild Assistant`\n\
 Developer : @acun1994\n\
+Special Thanks: @wolvix and @Knightniwrem for breaking the bot\n\
 Description : \n\
 Bot that assists in guild inventory management (Deposit, Withdraw)\n\
 Use /help for more info', parse_mode=ParseMode.MARKDOWN)

@@ -461,6 +461,7 @@ def help(bot, update):
     """Send a message when the command /help is issued."""
     update.message.reply_text('INLINE Bot usage: \n@cw_guildBot {itemName} {quantity} {"w" (optional, to withdraw)}. \n\nItem Name does not have to be full, 3 characters is enough')
     update.message.reply_text('STANDARD Bot usage: \nForward a list of items. Should support all inventories')
+    update.message.reply_text('WARNING: Enchanted and unique items will NOT be processed')
     update.message.reply_text('Poke @acun1994 if you find something that isn\'t handled yet')
 
 @catch_error

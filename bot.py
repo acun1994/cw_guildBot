@@ -681,7 +681,14 @@ def status(bot, job):
 
 def reset(bot, update):
     global proccessCount, errorCount
-    bot.sendMessage(chat_id='-1001213337130', text = 'CW - Trackers reset')
+    lastID = bot.sendMessage(chat_id='-1001213337130', text = 'CW - Trackers reset').message_id
+
+    for messID in range(287+1, lastID):#276 for dev, #287 for live
+        try:
+            bot.deleteMessage(chat_id='-1001213337130', message_id = messID)
+        except TelegramError:
+            continue
+
     errorCount = 0
     proccessCount = 0
 

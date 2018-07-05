@@ -5,6 +5,8 @@ from uuid import uuid4
 from telegram import InlineQueryResultArticle, ParseMode, InputTextMessageContent
 from telegram.ext import Updater, InlineQueryHandler, CommandHandler, MessageHandler, Filters
 from telegram.utils.helpers import escape_markdown
+from telegram.error import (TelegramError, Unauthorized, BadRequest, 
+                            TimedOut, ChatMigrated, NetworkError)
 
 from functools import wraps
 from datetime import datetime
@@ -56,13 +58,13 @@ itemCodes = {
     "Coke"              : "23",
     "Purified powder"   : "24",
     "Silver alloy"      : "25",
-    "Mithril alloy"     : "26",
+    #"Mithril alloy"     : "26",
     "Steel mold"        : "27",
     "Silver mold"       : "28",
     "Blacksmith frame"  : "29",
     "Artisan frame"     : "30", 
     "Rope"              : "31",
-    #NYI                : "32", 
+    "Silver frame"      : "32", 
     "Metal plate"       : "33",
     "Metallic fiber"    : "34",
     "Crafted leather"   : "35",
@@ -137,9 +139,9 @@ itemCodes = {
     "Wooden arrow"      : "504",
     "Wooden arrows pack": "505",
     "Bottle of Remedy"  : "506",
-	"Remedy Pack"       : "507",
+	"Remedy pack"       : "507",
 	"Bottle of Poison"  : "508",
-	"Poison Pack"       : "509",
+	"Poison pack"       : "509",
     "Steel arrow"       : "510",
     "Steel arrows pack" : "511",
     "Silver arrow"      : "512",
@@ -423,7 +425,7 @@ def catch_error(f):
                 if update.message.from_user.username:
                     username = update.message.from_user.username
 
-            template = "CW - ERROR \nUser: {2} ({3})\nAn exception of type {0} occurred.Arguments:\n{1!r}.Text :\n{4}"
+            template = "CW - ERROR \nUser: {2} ({3})\nAn exception of type {0} occurred\nArguments:\n{1!r}\nText :\n{4}"
             message = template.format(type(e).__name__, e.args, firstname, username, text)
             bot.send_message(chat_id='-1001213337130',
                              text=message, parse_mode = ParseMode.HTML)
@@ -514,6 +516,7 @@ def process(bot, update):
     boolValid = False
     boolRecipe = False
     boolGuild = False
+    boolMissing = False
     textLines = update.message.text.splitlines()
 
     #Individual recipe. Waiting for action
@@ -529,6 +532,11 @@ def process(bot, update):
     if "Guild" in textLines[0]:
         boolGuild = True
         textLines = [line.split(" ",1)[1] for line in textLines[1:]]
+
+    #Missing ingredients
+    elif "Not" in textLines[0]:
+        textLines = textLines[2:]
+        boolMissing = True
     
     #Brewery
     elif "/aa" in textLines[0]:
@@ -584,6 +592,8 @@ def process(bot, update):
     elif " x " in textLines[0]:
         textLines  = [line.split(" x ") for line in textLines]
         boolValid = True
+        if boolMissing:
+            textLines = [[line[1], line[0]] for line in textLines]
 
     global proccessCount
     if boolRecipe:
@@ -596,7 +606,7 @@ def process(bot, update):
 
         update.message.reply_text("{} {}\n{}".format(recipeAction, recipeTitle, replyText), parse_mode="HTML")
         return
-    elif boolGuild:
+    elif boolGuild or boolMissing:
         proccessCount = proccessCount+1
 
         replyText = "\n".join(["<a href='https://t.me/share/url?url=/g_withdraw%20{}%20{}'>{}</a> x {}".format(itemCodes[a[0]], a[1],a[0], a[1]) for a in textLines])
@@ -626,19 +636,35 @@ def process(bot, update):
 def error(bot, update, context = ""):
     """Log Errors caused by Updates."""
     if update is None: return
-    logger.warning('Update "%s" caused error "%s"', update, context)
-    bot.sendMessage(chat_id='-1001213337130', text = 'CW - <b>Error</b>\n Update "{}" caused error "{}"'.format(update, context), parse_mode = "HTML")
+    
+    try:
+        raise context
+    except BadRequest:
+        return
+    except TimedOut:
+        return
+    except TelegramError:
+        logger.warning('Update "%s" caused error "%s"', update, context)
+        bot.sendMessage(chat_id='-1001213337130', text = 'CW - <b>Telegram Error</b>\n Update "{}" caused error "{}"'.format(update, context), parse_mode = "HTML")
+        return
+    except Exception:
+        logger.warning('Update "%s" caused error "%s"', update, context)
+        bot.sendMessage(chat_id='-1001213337130', text = 'CW - <b>Error</b>\n Update "{}" caused error "{}"'.format(update, context), parse_mode = "HTML")
 
 def status(bot, job):
-    global proccessCount, errorCount
-    bot.edit_message_text(  chat_id = '-1001213337130', 
-                            message_id = 287, #276 for dev
+    messID = 287 #276 for dev, #287 for live
+    bot.edit_message_text(  chat_id = '-1001213337130',
+                            message_id = messID, 
                             text = "CW STATUS - `OK` : `{}`\nERRORS : **{}**\nPROCESSED : **{}**".format(
-                                        datetime.now().time().strftime('%H:%M'), 
-                                        errorCount,
-                                        proccessCount),
-                        parse_mode = ParseMode.MARKDOWN)
+                                datetime.now().time().strftime('%H:%M'), 
+                                errorCount,
+                                proccessCount),
+                            parse_mode = ParseMode.MARKDOWN)
 
+
+def reset(bot, update):
+    global proccessCount, errorCount
+    bot.sendMessage(chat_id='-1001213337130', text = 'CW - Trackers reset')
     errorCount = 0
     proccessCount = 0
 
@@ -654,9 +680,10 @@ dp = updater.dispatcher
 # on different commands - answer in Telegram
 dp.add_handler(CommandHandler("start", start))
 dp.add_handler(CommandHandler("help", help))
+dp.add_handler(CommandHandler("reset", reset))
 
 # Schedule
-jobQ.run_repeating(status, interval=900, first = 0)
+jobQ.run_repeating(status, interval=60, first = 0)
 
 # on noncommand i.e message - echo the message on Telegram
 dp.add_handler(MessageHandler(Filters.text, process))

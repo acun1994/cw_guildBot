@@ -603,7 +603,6 @@ def process(bot, update):
     #Filter out uniques
     textLines = [line for line in textLines if "+" not in line and "Sign" not in line]
 
-    print(textLines)
     if "(" in textLines[0]:
         textLines = [line.split(")")[0] for line in textLines]
         textLines = [line.split(" (") for line in textLines]

@@ -1,5 +1,5 @@
 # List of required packages (Dependencies)
-redis
+redis==2.10.6
 python-telegram-bot
 
 # If you need to specify a version

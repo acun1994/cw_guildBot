@@ -1,6 +1,6 @@
 # List of required packages (Dependencies)
 redis==2.10.6
-python-telegram-bot
+python-telegram-bot==10.1.0
 
 # If you need to specify a version
 requests==2.16.5

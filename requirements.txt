@@ -3,5 +3,5 @@ redis==2.10.6
 python-telegram-bot==10.1.0
 
 # If you need to specify a version
-requests==2.16.5
+requests==2.19.1
 

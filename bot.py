@@ -418,8 +418,9 @@ itemCodes = {
     "zombie box":"bx3",
     "zombie chest":"ch1",
     "hunter kit":"hk",
-    "ichor":"ich",
-    "key":"key",
+    #Cant be transferred, but keeping just in case
+    # "ichor":"ich",
+    # "key":"key",
     "accuracy pill":"pap",
     "garlic stew":"pgs",
     "holy water":"phw",
@@ -559,6 +560,9 @@ def process(bot, update):
     boolGuild = False
     boolMissing = False
     textLines = update.message.text.splitlines()
+
+    #Filter out blacklist
+    textLines = [line for line in textLines if "Ichor" not in line and "Key" not in line]
 
     #Individual recipe. Waiting for action
     if "📃" in textLines[0] or "(recipe)" in textLines[0]:

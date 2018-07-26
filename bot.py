@@ -450,6 +450,9 @@ def catch_error(f):
     def wrap(bot, update, context = ""):
         try:
             return f(bot, update)
+        except IndexError as e:
+            if update and update.message  :
+                update.message.reply_text("No transferrable items found")
         except Exception as e:
             logger.error(str(e))
             global errorCount 
@@ -476,7 +479,7 @@ def catch_error(f):
 @catch_error
 def start(bot, update):
     """Send a message when the command /start is issued."""
-    update.message.reply_text('Bot Name : `CW (EU) Guild Assistant`\n\
+    update.message.reply_text('Bot Name : `CW (EU) Guild Inventory Helper`\n\
 Developer : @acun1994\n\
 Special Thanks: @wolvix and @Knightniwrem for breaking the bot\n\
 Description : \n\
@@ -486,10 +489,11 @@ Use /help for more info', parse_mode=ParseMode.MARKDOWN)
 @catch_error
 def help(bot, update):
     """Send a message when the command /help is issued."""
-    update.message.reply_text('INLINE Bot usage: \n@cw_guildBot {itemName} {quantity} {"w" (optional, to withdraw)}. \n\nItem Name does not have to be full, 3 characters is enough')
-    update.message.reply_text('STANDARD Bot usage: \nForward a list of items. Should support all inventories')
-    update.message.reply_text('WARNING: Enchanted and unique items will NOT be processed')
-    update.message.reply_text('Poke @acun1994 if you find something that isn\'t handled yet')
+    update.message.reply_text('INLINE Bot usage: \n@cw_guildBot {itemName} {quantity} {"w" (optional, to withdraw)}. \n\nItem Name does not have to be full, 3 characters is enough.\n\
+    STANDARD Bot usage: \nForward a list of items. Should support all inventories.\n\
+    RECIPE Bot usage: \nForward the recipe text as received from CW.\
+    WARNING: Enchanted and unique items will NOT be processed\n\
+    Poke @acun1994 if you find something that isn\'t handled yet')
 
 @catch_error
 def inlinequery(bot, update):
@@ -547,7 +551,7 @@ def inlinequery(bot, update):
                 )
             )
 
-    update.inline_query.answer(results)
+    update.inline_query.answer(results, cache_time = None, is_personal = True)
 
 @catch_error
 def process(bot, update):
@@ -563,7 +567,7 @@ def process(bot, update):
 
     #Filter out blacklist
     textLines = [line for line in textLines if "Ichor" not in line and "Key" not in line]
-
+    
     #Individual recipe. Waiting for action
     if "📃" in textLines[0] or "(recipe)" in textLines[0]:
         update.message.reply_text("Please reply to the recipe text with [d]eposit or [w]ithdraw ")
@@ -593,7 +597,7 @@ def process(bot, update):
 
     #Misc
     elif "/use" in textLines[0]:
-        textLines = [line[:-10] if line[:-1] == ' ' else line if "Wrap" in line or "Card" in line else line[:-9] for line in textLines]
+        textLines = [line[:-10] if line[:-1] == ' ' else line if "Wrap" in line or "Card" in line or "Coupon" in line else line[:-9] for line in textLines]
     
     #Auction
     elif len(textLines) > 1 and "/lot" in textLines[1]:

@@ -150,6 +150,7 @@ itemCodes = {
     "🎟gift coupon 'horse'": "515",
     "🎟gift coupon 'owl'": "516",
     "🎟gift coupon 'mouse'": "517",
+    "🎟gift coupon 'gopher'": "522",
     "hay": "518",
     "corn": "519",
     "hamsters": "520",

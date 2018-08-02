@@ -756,7 +756,7 @@ dp.add_handler(InlineQueryHandler(inlinequery))
 dp.add_error_handler(error)
 
 # Start the Bot
-updater.start_polling()
+updater.start_polling(clean = True)
 
 # Block until the user presses Ctrl-C or the process receives SIGINT,
 # SIGTERM or SIGABRT. This should be used most of the time, since

@@ -493,10 +493,10 @@ Use /help for more info', parse_mode=ParseMode.MARKDOWN)
 def help(bot, update):
     """Send a message when the command /help is issued."""
     update.message.reply_text('INLINE Bot usage: \n@cw_guildBot {itemName} {quantity} {"w" (optional, to withdraw)}. \n\nItem Name does not have to be full, 3 characters is enough.\n\
-    STANDARD Bot usage: \nForward a list of items. Should support all inventories.\n\
-    RECIPE Bot usage: \nForward the recipe text as received from CW.\
-    WARNING: Enchanted and unique items will NOT be processed\n\
-    Poke @acun1994 if you find something that isn\'t handled yet')
+STANDARD Bot usage: \nForward a list of items. Should support all inventories.\n\n\
+RECIPE Bot usage: \nForward the recipe text as received from CW.\n\n\
+WARNING: Enchanted and unique items will NOT be processed\n\n\
+Poke @acun1994 if you find something that isn\'t handled yet')
 
 @catch_error
 def inlinequery(bot, update):

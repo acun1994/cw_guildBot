@@ -471,7 +471,7 @@ def catch_error(f):
                 if update.message.from_user.username:
                     username = update.message.from_user.username
 
-            template = "CW - ERROR \nUser: {2} ({3})\nAn exception of type {0} occurred\nArguments:\n{1!r}\nText :\n{4}"
+            template = "CW Guild - ERROR \nUser: {2} ({3})\nAn exception of type {0} occurred\nArguments:\n{1!r}\nText :\n{4}"
             message = template.format(type(e).__name__, e.args, firstname, username, text)
             bot.send_message(chat_id='-1001213337130',
                              text=message, parse_mode = ParseMode.HTML)

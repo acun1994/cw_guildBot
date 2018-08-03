@@ -46,6 +46,8 @@ itemCodes = {}
 for item in items.each():
    itemCodes[item.key()] = item.val()["id"]
 
+print("Ready for processing")
+
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)

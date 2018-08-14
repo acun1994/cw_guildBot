@@ -189,7 +189,7 @@ def process(bot, update):
     textLines = [line for line in textLines if "Ichor" not in line and "Key" not in line]
     
     #Individual recipe. Waiting for action
-    if "📃" in textLines[0] or "(recipe)" in textLines[0]:
+    if ("📃" in textLines[0] or "(recipe)" in textLines[0]) and ":" in textLines[0]:
         update.message.reply_text("Please reply to the recipe text with [d]eposit or [w]ithdraw ")
         return
 

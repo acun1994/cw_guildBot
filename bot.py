@@ -61,7 +61,10 @@ def catch_error(f):
     @wraps(f)
     def wrap(bot, update, context = ""):
         try:
-            return f(bot, update)
+            if f.__name__ == "error":
+                return f(bot, update, context)
+            else:
+                return f(bot, update)
         except IndexError as e:
             if update and update.message  :
                 update.message.reply_text("No transferrable items found")

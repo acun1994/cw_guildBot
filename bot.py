@@ -352,7 +352,7 @@ def reset(bot, update):
 # Create the Updater and pass it your bot's token.
 # Make sure to set use_context=True to use the new context baspls ed callbacks
 # Post version 12 this will no longer be necessary
-updater = Updater(token)
+updater = Updater(token, request_kwargs={'read_timeout': 10})
 jobQ = updater.job_queue
 
 # Get the dispatcher to register handlers

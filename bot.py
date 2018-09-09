@@ -125,6 +125,7 @@ def inlinequery(bot, update):
     actionText = "/g_deposit"
 
     results = []
+    hideBool = False
 
     if query == '' or len(query) < 3:
         update.inline_query.answer(results)
@@ -135,6 +136,11 @@ def inlinequery(bot, update):
     if queryString[-1].upper() == "W":
         queryString = queryString[:-1]
         actionText = "/g_withdraw"
+
+    elif queryString[-1].upper() == "H":
+        queryString = queryString[:-1]
+        actionText = "/wts"
+
 
     if len(queryString) == 1:
         quantity = 1
@@ -169,7 +175,7 @@ def inlinequery(bot, update):
                     id=uuid4(),
                     title = "{} x{}".format(key, quantity),
                     input_message_content = InputTextMessageContent(
-                        "{} {} {}".format(actionText, itemCodes[key], quantity)
+                        "{}_{}_{}_1000".format(actionText, itemCodes[key], quantity) if actionText == "/wts" else "{} {} {}".format(actionText, itemCodes[key], quantity)
                     )
                 )
             )

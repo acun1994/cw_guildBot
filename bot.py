@@ -275,6 +275,16 @@ def process(bot, update):
         if boolMissing:
             textLines = [[line[1], line[0]] for line in textLines]
 
+    textLineClean = []
+    textLineDirty = []
+    for line in textLines:
+        if line[0].lower() in itemCodes:
+            textLineClean.append(line)
+        else:
+            textLineDirty.append(line)
+        
+    textLines = textLineClean
+    
     global proccessCount
     if boolRecipe:
         proccessCount = proccessCount+1
@@ -297,8 +307,14 @@ def process(bot, update):
         proccessCount = proccessCount+1
 
         replyText = "\n".join(["<a href='https://t.me/share/url?url=/g_deposit%20{}%20{}'>{}</a> x {}".format(itemCodes[a[0].lower()], a[1],a[0], a[1]) for a in textLines])
-
         update.message.reply_text("DEPOSIT INTO GUILD\n{}".format(replyText), parse_mode="HTML")
+
+        if len(textLineDirty) > 0:
+            failReply = "==Failed to process==\n"
+            failReply += "\n".join([a[0] for a in textLineDirty])
+            update.message.reply_text(failReply, parse_mode="HTML")
+        
+        
         return
     else:
         global errorCount

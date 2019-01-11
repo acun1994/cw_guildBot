@@ -42,8 +42,14 @@ db = firebase.database()
 items = db.child("items").get()
 
 itemCodes = {}
+expensive = []
 
 for item in items.each():
+   cat = item.val()["category"]
+   if cat in [12,13]:
+       continue
+   elif cat == 14:
+       expensive.append(item.key())
    itemCodes[item.key()] = item.val()["id"]
 
 print("Ready for processing")
@@ -125,7 +131,6 @@ def inlinequery(bot, update):
     actionText = "/g_deposit"
 
     results = []
-    hideBool = False
 
     if query == '' or len(query) < 3:
         update.inline_query.answer(results)
@@ -306,8 +311,21 @@ def process(bot, update):
     elif boolValid:
         proccessCount = proccessCount+1
 
+        #Sort Expensive
+        expensiveLines = []
+        for a in textLines:
+            if a[0].lower() in expensive:
+                expensiveLines.append(a)
+        
+        for a in expensiveLines:
+            textLines.remove(a)
+
+
         replyText = "\n".join(["<a href='https://t.me/share/url?url=/g_deposit%20{}%20{}'>{}</a> x {}".format(itemCodes[a[0].lower()], a[1],a[0], a[1]) for a in textLines])
         update.message.reply_text("DEPOSIT INTO GUILD\n{}".format(replyText), parse_mode="HTML")
+
+        replyText = "\n".join(["<a href='https://t.me/share/url?url=/g_deposit%20{}%20{}'>{}</a> x {}".format(itemCodes[a[0].lower()], a[1],a[0], a[1]) for a in expensiveLines])
+        update.message.reply_text("💰EXPENSIVE SHIT💰\n{}".format(replyText), parse_mode="HTML")
 
         if len(textLineDirty) > 0:
             failReply = "==Failed to process==\n"

@@ -101,7 +101,14 @@ def catch_error(f):
 @catch_error
 def refresh(bot, update):
     global itemCodes
+    global expensive
+    expensive = []
     for item in db.child("items").get().each():
+        cat = item.val()["category"]
+        if cat in [12,13]:
+            continue
+        elif cat == 14:
+            expensive.append(item.key())
         itemCodes[item.key()] = item.val()["id"]
     update.message.reply_text("Item List updated!")
 

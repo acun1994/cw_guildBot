@@ -327,6 +327,9 @@ def process(bot, update):
         for a in expensiveLines:
             textLines.remove(a)
 
+        textLines.sort(key = lambda x:x[0])
+        expensiveLines.sort(key = lambda x:x[0])
+        textLineDirty.sort(key = lambda x:x[0])
 
         replyText = "\n".join(["<a href='https://t.me/share/url?url=/g_deposit%20{}%20{}'>{}</a> x {}".format(itemCodes[a[0].lower()], a[1],a[0], a[1]) for a in textLines])
         update.message.reply_text("DEPOSIT INTO GUILD\n{}".format(replyText), parse_mode="HTML")
@@ -413,7 +416,7 @@ dp.add_handler(CommandHandler("reset", reset))
 dp.add_handler(CommandHandler("refresh", refresh))
 
 # Schedule
-jobQ.run_repeating(status, interval=60, first = 0)
+#jobQ.run_repeating(status, interval=60, first = 0)
 
 # on noncommand i.e message - echo the message on Telegram
 dp.add_handler(MessageHandler(Filters.text, process))

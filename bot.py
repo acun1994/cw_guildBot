@@ -331,8 +331,9 @@ def process(bot, update):
         replyText = "\n".join(["<a href='https://t.me/share/url?url=/g_deposit%20{}%20{}'>{}</a> x {}".format(itemCodes[a[0].lower()], a[1],a[0], a[1]) for a in textLines])
         update.message.reply_text("DEPOSIT INTO GUILD\n{}".format(replyText), parse_mode="HTML")
 
-        replyText = "\n".join(["<a href='https://t.me/share/url?url=/g_deposit%20{}%20{}'>{}</a> x {}".format(itemCodes[a[0].lower()], a[1],a[0], a[1]) for a in expensiveLines])
-        update.message.reply_text("💰EXPENSIVE SHIT💰\n{}".format(replyText), parse_mode="HTML")
+        if len(expensiveLines) > 0:
+            replyText = "\n".join(["<a href='https://t.me/share/url?url=/g_deposit%20{}%20{}'>{}</a> x {}".format(itemCodes[a[0].lower()], a[1],a[0], a[1]) for a in expensiveLines])
+            update.message.reply_text("💰EXPENSIVE SHIT💰\n{}".format(replyText), parse_mode="HTML")
 
         if len(textLineDirty) > 0:
             failReply = "==Failed to process==\n"
